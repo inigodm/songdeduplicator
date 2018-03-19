@@ -3,29 +3,23 @@ package filesystem
 import dataretriever.MediaDataRetriever
 import models.SongInfo
 import java.io.File
-import java.util.stream.Collectors
 
-class MP3Finder{
-    var t : (file: File) -> MediaDataRetriever//KClass<MediaDataRetriever>
+class MP3Finder(factory : (file: File) -> MediaDataRetriever){
+    private var t : (file: File) -> MediaDataRetriever = factory
     val MAXIMUM_DEEP = 5;
-    val delMee = mutableListOf<String>()
-
-    constructor(file: File, factory : (file: File) -> MediaDataRetriever){
-        t = factory
-    }
 
     fun getAllMP3sFrom(path: String): List<SongInfo>{
-        val res = mutableMapOf<String, SongInfo>()
+        val res = TwoListsMap<SongInfo>()
         var file = File(path)
         if (file.exists()){
             addFilesFromDirectoryWithExtension(file, "mp3", res)
         }
-        return res.entries.stream().map { entry -> entry.value }.collect(Collectors.toList());
+        return res.values
     }
 
-    fun addFilesFromDirectoryWithExtension(file: File, extension: String, res: MutableMap<String, SongInfo>, deep: Int = 0){
+    private fun addFilesFromDirectoryWithExtension(file: File, extension: String, res: TwoListsMap<SongInfo>, deep: Int = 0){
         if (!file.canRead() || MAXIMUM_DEEP == deep){
-            return;
+            return
         }
         if (file.isDirectory){
             for (subfil in file.listFiles()){
@@ -38,7 +32,7 @@ class MP3Finder{
         }
     }
 
-    fun addFileOrMarkItAsDuplicated(file: File, res: MutableMap<String, SongInfo>){
+    private fun addFileOrMarkItAsDuplicated(file: File, res: TwoListsMap<SongInfo>){
         try {
             var si = t(file).buildSongInfo()
             if (isDuplicated(si, res)){
@@ -52,10 +46,19 @@ class MP3Finder{
         }
     }
 
-    fun isDuplicated(si: SongInfo, res: MutableMap<String, SongInfo>): Boolean{
-        return res.map{entry ->  entry.key}.parallelStream().anyMatch({
-            value -> if (value.length > si.hash.length)value.contains(si.hash) else si.hash.contains(value) })
-        //return res.containsKey(si.hash)111
+    private fun isDuplicated(si: SongInfo, res: TwoListsMap<SongInfo>): Boolean{
+        return res.keys.parallelStream().anyMatch({
+            value -> if (value.length > si.hash.length) value.contains(si.hash) else si.hash.contains(value) })
+    }
+}
+
+class TwoListsMap<T>{
+    val keys: MutableList<String> = mutableListOf()
+    val values: MutableList<T> = mutableListOf()
+
+    fun put(key: String, value: T){
+        keys.add(0,key)
+        values.add(0,value)
     }
 }
 

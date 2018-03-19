@@ -2,7 +2,7 @@ package models
 
 import java.text.Normalizer
 
-public data class SongInfo(val title: String,
+data class SongInfo(val title: String,
                            val album: String,
                            val artist: String,
                            val duration: Long,

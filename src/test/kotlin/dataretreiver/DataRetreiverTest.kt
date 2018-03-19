@@ -25,7 +25,7 @@ class DataRetreeiveTest{
     }
 
     @Test fun testGetAllSongsFromFile(){
-        var fs = MP3Finder(File("/home/inigo/wam_music.mp3"), ::DesktopMediaRetriever)
+        var fs = MP3Finder(::DesktopMediaRetriever)
         var files = fs.getAllMP3sFrom("/home/inigo")
         println("${files.size} songs found")
         println(files)
