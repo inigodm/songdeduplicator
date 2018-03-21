@@ -7,24 +7,22 @@ import models.SongInfo
 import java.io.File
 
 class DesktopMediaRetriever(file: File): MediaDataRetriever {
-    val VOID = "N/A"
-    var mp3 : Mp3File
+    private val VOID = "N/A"
+    var mp3 : Mp3File = Mp3File(file)
 
-    var pth: String
+    var pth: String = file.path
     var id : ID3v1
 
     init{
-        mp3 = Mp3File(file)
-        pth = file.path
         mp3 = Mp3File(pth)
         if (mp3.hasId3v1Tag()){
-            id = mp3.getId3v1Tag()
+            id = mp3.id3v1Tag
         }else if(mp3.hasId3v2Tag()){
-            id = mp3.getId3v2Tag()
+            id = mp3.id3v2Tag
         }else{
             id = ID3v22Tag()
         }
-        if (id.title == null || id.title.equals("")){
+        if (id.title == null || id.title.isEmpty()){
             id.title = file.name.substring(0, file.name.length - 4)
         }
     }
@@ -42,7 +40,7 @@ class DesktopMediaRetriever(file: File): MediaDataRetriever {
     }
 
     override fun getDuration(): Long {
-        return mp3.lengthInSeconds ?: 0
+        return mp3.lengthInSeconds
     }
 
     override fun getPath(): String {
